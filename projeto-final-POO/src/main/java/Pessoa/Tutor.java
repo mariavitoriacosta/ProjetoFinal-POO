@@ -22,7 +22,6 @@ public class Tutor extends Pessoa {
         conn.setAutoCommit(false);
 
         try {
-            // 0) Verificar se já existe tutor com esse CPF
             String sqlCheck = "SELECT 1 FROM Tutor WHERE Pessoa_cpf = ?";
             try (PreparedStatement st = conn.prepareStatement(sqlCheck)) {
                 st.setString(1, tutor.getCpf());
@@ -32,7 +31,6 @@ public class Tutor extends Pessoa {
                 }
             }
 
-            // 1) Inserir na tabela Pessoa
             String sqlPessoa = "INSERT INTO Pessoa (cpf, nome, telefone) VALUES (?, ?, ?)";
             try (PreparedStatement st = conn.prepareStatement(sqlPessoa)) {
                 st.setString(1, tutor.getCpf());
@@ -41,13 +39,11 @@ public class Tutor extends Pessoa {
                 st.executeUpdate();
             }
 
-            // 2) Inserir na tabela Tutor
             String sqlTutor = "INSERT INTO Tutor (Pessoa_cpf) VALUES (?)";
             try (PreparedStatement st = conn.prepareStatement(sqlTutor)) {
                 st.setString(1, tutor.getCpf());
                 st.executeUpdate();
             }
-
             conn.commit();
             System.out.println("Tutor cadastrado com sucesso!");
 
@@ -63,31 +59,16 @@ public class Tutor extends Pessoa {
         Map<String, Tutor> mapa = new HashMap<>();
         List<Tutor> lista = new ArrayList<>();
 
-        String sql = """
-        SELECT
-            p.cpf,
-            p.nome AS tutorNome,
-            p.telefone,
-            a.idAnimal,
-            a.nome AS animalNome,
-            a.idade,
-            a.raca,
-
-            CASE
-                WHEN g.Animal_idAnimal IS NOT NULL THEN 'GATO'
-                WHEN c.Animal_idAnimal IS NOT NULL THEN 'CACHORRO'
-                ELSE 'DESCONHECIDO'
-            END AS tipoAnimal
-
-        FROM Pessoa p
-        JOIN Tutor t      ON t.Pessoa_cpf = p.cpf
-        LEFT JOIN Animal a ON a.Tutor_Pessoa_cpf = p.cpf
-        LEFT JOIN Gato g    ON g.Animal_idAnimal = a.idAnimal
-        LEFT JOIN Cachorro c ON c.Animal_idAnimal = a.idAnimal
-
-        WHERE p.nome = ?
-        ORDER BY p.nome, a.nome
-        """;
+        String sql = " SELECT p.cpf, p.nome AS tutorNome, p.telefone, a.idAnimal, a.nome AS animalNome, a.idade, a.raca, " +
+                "CASE " +
+                "WHEN g.Animal_idAnimal IS NOT NULL THEN 'GATO' " +
+                "WHEN c.Animal_idAnimal IS NOT NULL THEN 'CACHORRO' " +
+                "ELSE 'DESCONHECIDO' END AS tipoAnimal FROM Pessoa p " +
+                "JOIN Tutor t ON t.Pessoa_cpf = p.cpf " +
+                "LEFT JOIN Animal a ON a.Tutor_Pessoa_cpf = p.cpf " +
+                "LEFT JOIN Gato g    ON g.Animal_idAnimal = a.idAnimal " +
+                "LEFT JOIN Cachorro c ON c.Animal_idAnimal = a.idAnimal " +
+                "WHERE p.nome = ? ORDER BY p.nome, a.nome";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, nomeTutor);
@@ -95,9 +76,7 @@ public class Tutor extends Pessoa {
 
             while (rs.next()) {
                 String cpf = rs.getString("cpf");
-
-                // Se ainda não existe o Tutor no mapa, cria
-                if (!mapa.containsKey(cpf)) {
+                  if (!mapa.containsKey(cpf)) {
                     Tutor tutor = new Tutor(
                             rs.getString("tutorNome"),
                             cpf,
@@ -105,7 +84,6 @@ public class Tutor extends Pessoa {
                     );
                     mapa.put(cpf, tutor);
                 }
-
                 Tutor tutor = mapa.get(cpf);
 
                 int idAnimal = rs.getInt("idAnimal");
@@ -130,7 +108,6 @@ public class Tutor extends Pessoa {
                                 rs.getString("raca")
                         );
                     }
-
                     tutor.getAnimais().add(animal);
                 }
             }
@@ -141,32 +118,19 @@ public class Tutor extends Pessoa {
     }
 
     public static List<Tutor> readAll(Connection conn) throws SQLException {
-        Map<String, Tutor> mapa = new HashMap<>(); // CPF é String (correto no seu modelo)
+        Map<String, Tutor> mapa = new HashMap<>();
 
-        String sql = """
-        SELECT
-            p.cpf,
-            p.nome      AS tutorNome,
-            p.telefone  AS telefone,
-            a.idAnimal  AS animalId,
-            a.nome      AS animalNome,
-            a.idade     AS animalIdade,
-            a.raca      AS animalRaca,
-
-            CASE
-                WHEN g.Animal_idAnimal IS NOT NULL THEN 'GATO'
-                WHEN c.Animal_idAnimal IS NOT NULL THEN 'CACHORRO'
-                ELSE NULL
-            END AS tipoAnimal
-
-        FROM Tutor t
-        JOIN Pessoa p   ON p.cpf = t.Pessoa_cpf
-        LEFT JOIN Animal   a ON a.Tutor_Pessoa_cpf = t.Pessoa_cpf
-        LEFT JOIN Gato     g ON g.Animal_idAnimal = a.idAnimal
-        LEFT JOIN Cachorro c ON c.Animal_idAnimal = a.idAnimal
-
-        ORDER BY p.nome, a.nome
-        """;
+        String sql = "SELECT p.cpf, p.nome AS tutorNome, p.telefone  AS telefone, a.idAnimal  AS animalId, a.nome AS animalNome, a.idade AS animalIdade, a.raca AS animalRaca, " +
+                "CASE " +
+                "WHEN g.Animal_idAnimal IS NOT NULL " +
+                "THEN 'GATO' " +
+                "WHEN c.Animal_idAnimal IS NOT NULL " +
+                "THEN 'CACHORRO' " +
+                "ELSE NULL END AS tipoAnimal FROM Tutor t " +
+                "JOIN Pessoa p ON p.cpf = t.Pessoa_cpf " +
+                "LEFT JOIN Animal a ON a.Tutor_Pessoa_cpf = t.Pessoa_cpf " +
+                "LEFT JOIN Gato g ON g.Animal_idAnimal = a.idAnimal " +
+                "LEFT JOIN Cachorro c ON c.Animal_idAnimal = a.idAnimal ORDER BY p.nome, a.nome";
 
         try (Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
@@ -175,16 +139,14 @@ public class Tutor extends Pessoa {
 
                 String cpf = rs.getString("cpf");
 
-                // cria o Tutor apenas uma vez
                 mapa.putIfAbsent(cpf, new Tutor(
                         rs.getString("tutorNome"),
-                        cpf,                               // CPF como String
+                        cpf,
                         rs.getString("telefone")
                 ));
 
                 Tutor tutor = mapa.get(cpf);
 
-                // Verificar se existe animal (por causa do LEFT JOIN)
                 int animalId = rs.getInt("animalId");
                 if (!rs.wasNull()) {
 
@@ -213,7 +175,6 @@ public class Tutor extends Pessoa {
                 }
             }
         }
-
         return new ArrayList<>(mapa.values());
     }
 
@@ -222,45 +183,30 @@ public class Tutor extends Pessoa {
         conn.setAutoCommit(false);
 
         try {
-            // 1) Deletar Gatos vinculados ao tutor
-            String sqlGato = """
-            DELETE FROM Gato 
-            WHERE Animal_idAnimal IN (
-                SELECT idAnimal FROM Animal WHERE Tutor_Pessoa_cpf = ?
-            )
-        """;
+            String sqlGato = "DELETE FROM Gato WHERE Animal_idAnimal IN (SELECT idAnimal FROM Animal WHERE Tutor_Pessoa_cpf = ?)";
             try (PreparedStatement st = conn.prepareStatement(sqlGato)) {
                 st.setString(1, cpf);
                 st.executeUpdate();
             }
 
-            // 2) Deletar Cachorros vinculados ao tutor
-            String sqlCachorro = """
-            DELETE FROM Cachorro 
-            WHERE Animal_idAnimal IN (
-                SELECT idAnimal FROM Animal WHERE Tutor_Pessoa_cpf = ?
-            )
-        """;
+            String sqlCachorro = "DELETE FROM Cachorro WHERE Animal_idAnimal IN (SELECT idAnimal FROM Animal WHERE Tutor_Pessoa_cpf = ?)";
             try (PreparedStatement st = conn.prepareStatement(sqlCachorro)) {
                 st.setString(1, cpf);
                 st.executeUpdate();
             }
 
-            // 3) Deletar os Animais
             String sqlAnimal = "DELETE FROM Animal WHERE Tutor_Pessoa_cpf = ?";
             try (PreparedStatement st = conn.prepareStatement(sqlAnimal)) {
                 st.setString(1, cpf);
                 st.executeUpdate();
             }
 
-            // 4) Deletar Tutor
             String sqlTutor = "DELETE FROM Tutor WHERE Pessoa_cpf = ?";
             try (PreparedStatement st = conn.prepareStatement(sqlTutor)) {
                 st.setString(1, cpf);
                 st.executeUpdate();
             }
 
-            // 5) Deletar Pessoa
             String sqlPessoa = "DELETE FROM Pessoa WHERE cpf = ?";
             try (PreparedStatement st = conn.prepareStatement(sqlPessoa)) {
                 st.setString(1, cpf);

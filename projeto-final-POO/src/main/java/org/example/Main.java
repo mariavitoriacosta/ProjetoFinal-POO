@@ -131,7 +131,6 @@ public class Main {
 
                     Gato g = new Gato(0, nome, idade, raca);
                     Gato.create(conn, g, cpfTutor);
-                    System.out.println("Gato cadastrado!");
                 }
                 case 2 -> {
                     System.out.print("Nome do cachorro: ");
@@ -150,6 +149,8 @@ public class Main {
                     System.out.print("ID do animal a excluir: ");
                     int id = Integer.parseInt(sc.nextLine());
                     Animal.deleteAnimal(conn, id);
+                    System.out.println("Animal excluído com sucesso!");
+
                 }
                 case 0 -> {}
                 default -> System.out.println("Opção inválida!");

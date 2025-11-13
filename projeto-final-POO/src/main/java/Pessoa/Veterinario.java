@@ -21,7 +21,6 @@ public class Veterinario extends Pessoa {
         conn.setAutoCommit(false);
 
         try {
-            // 0) Verificar se já existe veterinário com este CPF
             String sqlCheck = "SELECT 1 FROM Veterinario WHERE Pessoa_cpf = ?";
             try (PreparedStatement st = conn.prepareStatement(sqlCheck)) {
                 st.setString(1, vet.getCpf());
@@ -31,7 +30,6 @@ public class Veterinario extends Pessoa {
                 }
             }
 
-            // 1) Inserir Pessoa
             String sqlPessoa = "INSERT INTO Pessoa (cpf, nome, telefone) VALUES (?, ?, ?)";
             try (PreparedStatement st = conn.prepareStatement(sqlPessoa)) {
                 st.setString(1, vet.getCpf());
@@ -40,7 +38,6 @@ public class Veterinario extends Pessoa {
                 st.executeUpdate();
             }
 
-            // 2) Inserir Veterinário
             String sqlVet = "INSERT INTO Veterinario (Pessoa_cpf, crmv) VALUES (?, ?)";
             try (PreparedStatement st = conn.prepareStatement(sqlVet)) {
                 st.setString(1, vet.getCpf());
@@ -85,16 +82,8 @@ public class Veterinario extends Pessoa {
     public static List<Veterinario> readAll(Connection conn) throws SQLException {
         List<Veterinario> lista = new ArrayList<>();
 
-        String sql = """
-        SELECT 
-            p.cpf,
-            p.nome,
-            p.telefone,
-            v.crmv
-        FROM Pessoa p
-        JOIN Veterinario v ON v.Pessoa_cpf = p.cpf
-        ORDER BY p.nome
-        """;
+        String sql = "SELECT p.cpf,p.nome,p.telefone,v.crmv FROM Pessoa p " +
+                "JOIN Veterinario v ON v.Pessoa_cpf = p.cpf ORDER BY p.nome";
 
         try (Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
@@ -118,21 +107,18 @@ public class Veterinario extends Pessoa {
         conn.setAutoCommit(false);
 
         try {
-            // 1) Deletar consultas do veterinário
             String sqlConsulta = "DELETE FROM Consulta WHERE Veterinario_Pessoa_cpf = ?";
             try (PreparedStatement st = conn.prepareStatement(sqlConsulta)) {
                 st.setString(1, cpf);
                 st.executeUpdate();
             }
 
-            // 2) Deletar o veterinário
             String sqlVet = "DELETE FROM Veterinario WHERE Pessoa_cpf = ?";
             try (PreparedStatement st = conn.prepareStatement(sqlVet)) {
                 st.setString(1, cpf);
                 st.executeUpdate();
             }
 
-            // 3) Deletar a pessoa correspondente
             String sqlPessoa = "DELETE FROM Pessoa WHERE cpf = ?";
             try (PreparedStatement st = conn.prepareStatement(sqlPessoa)) {
                 st.setString(1, cpf);
@@ -149,6 +135,5 @@ public class Veterinario extends Pessoa {
             conn.setAutoCommit(oldAuto);
         }
     }
-
 }
 

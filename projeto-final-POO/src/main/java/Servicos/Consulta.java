@@ -43,8 +43,6 @@ public class Consulta implements GetInfo {
         return texto;
     }
 
-
-
     public void setId(int id) {
         this.id = id;
     }
@@ -192,32 +190,14 @@ public class Consulta implements GetInfo {
     public static List<Consulta> readByAnimalName(Connection conn, String nomeAnimal) throws SQLException {
         List<Consulta> consultas = new ArrayList<>();
 
-        String sql = """
-    SELECT
-        c.idConsulta,
-        c.dataHora,
-        c.status,
-        c.motivo,
-        c.diagnostico,
-        c.prescricao,
-
-        a.idAnimal,
-        a.nome AS animalNome,
-        a.raca AS animalRaca,
-
-        pVet.nome AS vetNome,
-        v.crmv AS vetCrmv,
-        c.Veterinario_Pessoa_cpf AS vetCpf
-
-    FROM Consulta c
-    JOIN Animal a        ON a.idAnimal = c.Animal_idAnimal
-    JOIN Veterinario v   ON v.Pessoa_cpf = c.Veterinario_Pessoa_cpf
-    JOIN Pessoa pVet     ON pVet.cpf = v.Pessoa_cpf
-
-    WHERE a.nome LIKE ?
-    ORDER BY c.dataHora DESC
-    """;
-
+        String sql = " SELECT c.idConsulta, c.dataHora, c.status, c.motivo, c.diagnostico, c.prescricao, a.idAnimal, " +
+                "a.nome AS animalNome, a.raca AS animalRaca, " +
+                "pVet.nome AS vetNome, v.crmv AS vetCrmv, c.Veterinario_Pessoa_cpf AS vetCpf " +
+                "FROM Consulta c " +
+                "JOIN Animal a  ON a.idAnimal = c.Animal_idAnimal " +
+                "JOIN Veterinario v  ON v.Pessoa_cpf = c.Veterinario_Pessoa_cpf " +
+                "JOIN Pessoa pVet  ON pVet.cpf = v.Pessoa_cpf " +
+                "WHERE a.nome LIKE ? ORDER BY c.dataHora DESC";
 
         try (PreparedStatement st = conn.prepareStatement(sql)) {
             st.setString(1, "%" + nomeAnimal + "%");
@@ -247,41 +227,18 @@ public class Consulta implements GetInfo {
         return consultas;
     }
 
-
-
-
     public static List<Consulta> readAll(Connection conn) throws SQLException {
         List<Consulta> consultas = new ArrayList<>();
 
-        String sql = """
-        SELECT
-            c.idConsulta,
-            c.dataHora,
-            c.status,
-            c.motivo,
-            c.diagnostico,
-            c.prescricao,
-
-            a.idAnimal,
-            a.nome  AS animalNome,
-            a.raca  AS animalRaca,
-            a.idade AS animalIdade,
-
-            pTutor.nome AS tutorNome,
-            pTutor.cpf  AS tutorCpf,
-
-            pVet.nome AS vetNome,
-            pVet.cpf  AS vetCpf,
-            v.crmv    AS vetCrmv
-
-        FROM Consulta c
-        JOIN Animal a         ON a.idAnimal = c.Animal_idAnimal
-        JOIN Tutor t          ON t.Pessoa_cpf = a.Tutor_Pessoa_cpf
-        JOIN Pessoa pTutor    ON pTutor.cpf = t.Pessoa_cpf
-        JOIN Veterinario v    ON v.Pessoa_cpf = c.Veterinario_Pessoa_cpf
-        JOIN Pessoa pVet      ON pVet.cpf = v.Pessoa_cpf
-        ORDER BY c.dataHora DESC
-    """;
+        String sql = " SELECT c.idConsulta, c.dataHora, c.status, c.motivo, c.diagnostico, c.prescricao," +
+                "a.idAnimal, a.nome  AS animalNome, a.raca  AS animalRaca, a.idade AS animalIdade, " +
+                "pTutor.nome AS tutorNome, pTutor.cpf  AS tutorCpf, " +
+                "pVet.nome AS vetNome, pVet.cpf  AS vetCpf, v.crmv AS vetCrmv " +
+                "FROM Consulta c JOIN Animal a ON a.idAnimal = c.Animal_idAnimal JOIN Tutor t ON t.Pessoa_cpf = a.Tutor_Pessoa_cpf " +
+                "JOIN Pessoa pTutor ON pTutor.cpf = t.Pessoa_cpf " +
+                "JOIN Veterinario v ON v.Pessoa_cpf = c.Veterinario_Pessoa_cpf " +
+                "JOIN Pessoa pVet ON pVet.cpf = v.Pessoa_cpf " +
+                "ORDER BY c.dataHora DESC ";
 
         try (Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
@@ -299,7 +256,6 @@ public class Consulta implements GetInfo {
                         rs.getString("vetCpf")
                 );
 
-                // ---- Set extras (nome do tutor, nome do animal etc.) ----
                 consulta.setAnimalNome(rs.getString("animalNome"));
                 consulta.setAnimalRaca(rs.getString("animalRaca"));
 
@@ -315,29 +271,6 @@ public class Consulta implements GetInfo {
         return consultas;
     }
 
-    public static Consulta read(Connection conn, int idConsulta) throws SQLException {
-        String sql = "SELECT * FROM Consulta WHERE idConsulta = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, idConsulta);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    StatusConsulta status = StatusConsulta.valueOf(rs.getString("status"));
-                    return new Consulta(
-                            rs.getInt("idConsulta"),
-                            rs.getString("dataHora"),
-                            status,
-                            rs.getString("motivo"),
-                            rs.getString("diagnostico"),
-                            rs.getString("prescricao"),
-                            rs.getInt("Animal_idAnimal"),
-                            rs.getString("Veterinario_Pessoa_cpf")
-                    );
-                }
-            }
-        }
-        return null;
-    }
-
     public static void updateReceita(Connection conn, int idConsulta, String receita) throws SQLException {
         String sql = "UPDATE Consulta SET prescricao = ? WHERE idConsulta = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -350,7 +283,7 @@ public class Consulta implements GetInfo {
         String sql = "UPDATE Consulta SET status = ? WHERE idConsulta = ?";
 
         try (PreparedStatement st = conn.prepareStatement(sql)) {
-            st.setString(1, novoStatus.name()); // AGENDADA, REALIZADA, CANCELADA...
+            st.setString(1, novoStatus.name());
             st.setInt(2, idConsulta);
 
             int linhas = st.executeUpdate();

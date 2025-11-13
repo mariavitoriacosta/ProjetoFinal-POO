@@ -37,15 +37,14 @@ public abstract class Animal {
         this.id = id;
     }
 
-    public static boolean deleteAnimal(Connection conn, int idAnimal) throws SQLException {
+    public static void deleteAnimal(Connection conn, int idAnimal) throws SQLException {
         String sql = "DELETE FROM Animal WHERE idAnimal = ?";
 
         try (PreparedStatement st = conn.prepareStatement(sql)) {
             st.setInt(1, idAnimal);
             int rows = st.executeUpdate();
-            return rows > 0; // retorna true se deletou
+
         }
     }
-
 }
 
