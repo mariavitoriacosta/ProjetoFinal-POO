@@ -1,10 +1,11 @@
-package Pessoa;
+package org.example.Pessoa;
 
-import Animal.Animal;
-import Animal.Gato;
-import Animal.Cachorro;
 import java.sql.*;
 import java.util.*;
+
+import org.example.Animal.Animal;
+import org.example.Animal.Cachorro;
+import org.example.Animal.Gato;
 
 public class Tutor extends Pessoa {
     private List<Animal> animais = new ArrayList<>();

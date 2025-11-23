@@ -1,18 +1,19 @@
 package org.example;
 
-import Animal.Animal;
-import Animal.Cachorro;
-import Animal.Gato;
-import Database.ConnectionFactory;
-import Pessoa.Tutor;
-import Pessoa.Veterinario;
-import Servicos.Consulta;
-import Servicos.StatusConsulta;
+import org.example.Database.ConnectionFactory;
+import org.example.Pessoa.Tutor;
+import org.example.Pessoa.Veterinario;
+import org.example.Servicos.Consulta;
+import org.example.Servicos.StatusConsulta;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
+
+import org.example.Animal.Animal;
+import org.example.Animal.Cachorro;
+import org.example.Animal.Gato;
 
 public class Main {
 

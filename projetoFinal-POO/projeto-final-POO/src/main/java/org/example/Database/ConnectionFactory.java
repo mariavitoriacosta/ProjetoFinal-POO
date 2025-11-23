@@ -1,5 +1,5 @@
 
-package Database;
+package org.example.Database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

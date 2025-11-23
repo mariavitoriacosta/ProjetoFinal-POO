@@ -1,4 +1,4 @@
-package Pessoa;
+package org.example.Pessoa;
 
 import java.sql.*;
 import java.util.ArrayList;

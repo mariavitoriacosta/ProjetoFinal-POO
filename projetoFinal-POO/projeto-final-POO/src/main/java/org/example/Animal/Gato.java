@@ -1,4 +1,6 @@
-package Animal;
+package org.example.Animal;
+
+import org.example.Animal.Gato;
 
 import java.sql.*;
 import java.util.*;

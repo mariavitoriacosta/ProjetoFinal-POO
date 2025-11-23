@@ -1,6 +1,6 @@
-package Servicos;
+package org.example.Servicos;
 
-import Interface.GetInfo;
+import org.example.Interface.GetInfo;
 
 import java.sql.*;
 import java.util.*;

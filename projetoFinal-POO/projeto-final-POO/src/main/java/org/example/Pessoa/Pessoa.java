@@ -1,4 +1,5 @@
-package Pessoa;
+package org.example.Pessoa;
+
 
 public abstract class Pessoa {
     protected String nome;

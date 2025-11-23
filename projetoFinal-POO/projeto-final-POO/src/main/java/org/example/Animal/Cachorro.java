@@ -1,4 +1,4 @@
-package Animal;
+package org.example.Animal;
 
 
 import java.sql.*;
@@ -36,6 +36,10 @@ public class Cachorro extends Animal {
     }
 
     public static void create(Connection conn, Cachorro cachorro, String cpfTutor) throws SQLException {
+        if (conn == null || cachorro == null || cpfTutor == null || cpfTutor.trim().isEmpty()) {
+            throw new IllegalArgumentException("Dados de entrada (conexão, cachorro ou CPF) não podem ser nulos/vazios.");
+        }
+        
         boolean oldAuto = conn.getAutoCommit();
         conn.setAutoCommit(false);
 
@@ -72,15 +76,20 @@ public class Cachorro extends Animal {
             conn.commit();
             System.out.println("Cachorro cadastrado com sucesso! ID = " + idAnimalGerado);
 
-        } catch (SQLException e) {
+        } catch (SQLException sqlEx) { 
             conn.rollback();
-            throw e;
+            System.err.println("Erro durante o cadastro de Cachorro. Realizando rollback: " + sqlEx.getMessage());
+            throw sqlEx;
         } finally {
             conn.setAutoCommit(oldAuto);
         }
     }
 
     public static List<Cachorro> readByName(Connection conn, String nome) throws SQLException {
+        if (conn == null || nome == null || nome.trim().isEmpty()) {
+            throw new IllegalArgumentException("Conexão ou nome de busca não podem ser nulos/vazios.");
+        }
+        
         List<Cachorro> lista = new ArrayList<>();
 
         String sql = "SELECT a.idAnimal, a.nome AS animalNome, a.idade, a.raca, p.nome AS tutorNome,p.cpf AS tutorCpf, p.telefone AS tutorTelefone FROM Animal a " +
@@ -107,13 +116,19 @@ public class Cachorro extends Animal {
 
                 lista.add(cachorro);
             }
+        } catch (SQLException sqlEx) {
+            System.err.println("Erro ao buscar Cachorro por nome: " + sqlEx.getMessage());
+            throw sqlEx;
         }
         return lista;
     }
 
 
-
     public static List<Cachorro> readAll(Connection conn) throws SQLException {
+        if (conn == null) {
+            throw new IllegalArgumentException("Conexão não pode ser nula.");
+        }
+        
         List<Cachorro> cachorros = new ArrayList<>();
 
         String sql = "SELECT a.idAnimal, a.nome, a.idade, a.raca, p.nome AS tutorNome, p.cpf  AS tutorCpf FROM   Animal a JOIN Cachorro c ON a.idAnimal = c.Animal_idAnimal " +
@@ -135,6 +150,9 @@ public class Cachorro extends Animal {
                 cachorro.setTutorNome(rs.getString("tutorNome"));
                 cachorros.add(cachorro);
             }
+        } catch (SQLException sqlEx) {
+            System.err.println("Erro ao buscar todos os Cachorros: " + sqlEx.getMessage());
+            throw sqlEx;
         }
 
         return cachorros;
