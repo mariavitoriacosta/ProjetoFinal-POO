@@ -10,6 +10,8 @@ import Servicos.Consulta;
 import Servicos.StatusConsulta;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
@@ -93,13 +95,14 @@ public class Main {
 
                     Tutor t = new Tutor(nome, cpf, telefone);
                     Tutor.create(conn, t);
-                    System.out.println("Tutor cadastrado!");
+                    System.out.println("Tutor cadastrado com sucesso!");
                 }
 
                 case 2 -> {
                     System.out.print("CPF do tutor a excluir: ");
                     String cpfDel = sc.nextLine();
                     Tutor.delete(conn, cpfDel);
+                    System.out.println("Tutor deletado com sucesso!");
                 }
                 case 0 -> {}
                 default -> System.out.println("Opção inválida!");
@@ -368,7 +371,7 @@ public class Main {
             System.out.println("1 - Agendar consulta");
             System.out.println("2 - Listar todas as consultas");
             System.out.println("3 - Listar consultas por animal");
-            System.out.println("4 - Atualizar status da consulta");
+            System.out.println("4 - Preencher receita e gerar TXT");
             System.out.println("0 - Voltar");
             System.out.print("Escolha: ");
             opcao = Integer.parseInt(sc.nextLine());
@@ -378,7 +381,7 @@ public class Main {
                     case 1 -> agendarConsulta(conn, sc);
                     case 2 -> listarConsultas(conn);
                     case 3 -> listarConsultasPorAnimal(conn, sc);
-                    case 4 -> alterarStatusConsulta(conn, sc);
+                    case 4 -> gerarReceitaTXT(conn, sc);
                     case 0 -> {}
                     default -> System.out.println("Opção inválida!");
                 }
@@ -459,43 +462,55 @@ public class Main {
         }
     }
 
-    private static void alterarStatusConsulta(Connection conn, Scanner sc) throws SQLException {
+    private static void gerarReceitaTXT(Connection conn, Scanner sc) throws SQLException {
         System.out.print("ID da consulta: ");
         int idConsulta = Integer.parseInt(sc.nextLine());
 
-        // (opcional) você pode buscar a consulta antes pra mostrar status atual
-        // Consulta consulta = Consulta.readById(conn, idConsulta);
-        // System.out.println("Status atual: " + consulta.getStatus());
+        Consulta consulta = Consulta.readById(conn, idConsulta);
 
-        System.out.println("\nEscolha o novo status:");
-        System.out.println("1 - Confirmada (AGENDADA)");
-        System.out.println("2 - Realizada");
-        System.out.println("3 - Cancelada");
-        System.out.print("Opção: ");
-        int opcao = Integer.parseInt(sc.nextLine());
+        if (consulta == null) {
+            System.out.println("Consulta não encontrada!");
+            return;
+        }
+        if (Consulta.isPrimeiraConsulta(conn, consulta.getAnimalId())) {
+            System.out.println("\n*** Primeira consulta deste animal! ***");
 
-        StatusConsulta novoStatus;
+            boolean ehGato = false;
 
-        switch (opcao) {
-            case 1 -> novoStatus = StatusConsulta.AGENDADA;   // "Confirmada"
-            case 2 -> novoStatus = StatusConsulta.REALIZADA;
-            case 3 -> novoStatus = StatusConsulta.CANCELADA;
-            default -> {
-                System.out.println("Opção inválida.");
-                return;
+            String sqlGato = "SELECT 1 FROM Gato WHERE Animal_idAnimal = ?";
+            try (PreparedStatement st = conn.prepareStatement(sqlGato)) {
+                st.setInt(1, consulta.getAnimalId());
+                ResultSet rs = st.executeQuery();
+                ehGato = rs.next();
+            }
+
+            if (ehGato) {
+                System.out.println("Recomendação: aplicar vacina Múltipla Felina (V3/V4/V5).");
+            } else {
+                System.out.println("Recomendação: aplicar vacina V8/V10.");
             }
         }
 
-        Consulta.atualizarStatus(conn, idConsulta, novoStatus);
-
-        // mensagens específicas
-        if (novoStatus == StatusConsulta.CANCELADA) {
-            System.out.println("Consulta cancelada com sucesso.");
-        } else if (novoStatus == StatusConsulta.REALIZADA) {
-            System.out.println("Consulta marcada como realizada.");
-        } else {
-            System.out.println("Consulta confirmada com sucesso.");
+        if (consulta.getPrescricao() == null || consulta.getPrescricao().isBlank()) {
+            consulta.preencherReceita(sc);
+            Consulta.updateDiagnosticoEPrescricao(
+                    conn,
+                    idConsulta,
+                    consulta.getDiagnostico(),
+                    consulta.getPrescricao()
+            );
         }
+        String caminho = "receita_" + idConsulta + ".txt";
+        new Thread(() -> {
+            try {
+                consulta.exportarTXT(caminho);
+                System.out.println("Receita gerada em background: " + caminho);
+            } catch (Exception e) {
+                System.out.println("Erro ao gerar arquivo TXT (thread): " + e.getMessage());
+            }
+        }).start();
     }
+
+
 }
 

@@ -30,6 +30,11 @@ public class Gato extends Animal {
         super(id, nome, idade, raca);
     }
 
+    @Override
+    public String getVacinaPrimeiraConsulta() {
+        return "Recomendação: Múltipla felina (V3/V4/V5) + antirrábica, conforme protocolo do veterinário.";
+    }
+
     public static void create(Connection conn, Gato gato, String cpfTutor) throws SQLException {
         boolean oldAuto = conn.getAutoCommit();
         conn.setAutoCommit(false);

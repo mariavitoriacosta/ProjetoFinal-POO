@@ -45,7 +45,6 @@ public class Tutor extends Pessoa {
                 st.executeUpdate();
             }
             conn.commit();
-            System.out.println("Tutor cadastrado com sucesso!");
 
         } catch (SQLException e) {
             conn.rollback();
@@ -214,7 +213,6 @@ public class Tutor extends Pessoa {
             }
 
             conn.commit();
-            System.out.println("Tutor deletado com sucesso!");
 
         } catch (SQLException e) {
             conn.rollback();

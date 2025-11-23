@@ -16,15 +16,8 @@ public class Cachorro extends Animal {
         this.tutorNome = tutorNome;
     }
 
-    public String getTutorCpf() {
-        return tutorCpf;
-    }
     public void setTutorCpf(String tutorCpf) {
         this.tutorCpf = tutorCpf;
-    }
-
-    public String getTutorTelefone() {
-        return tutorTelefone;
     }
 
     public void setTutorTelefone(String tutorTelefone) {
@@ -33,6 +26,11 @@ public class Cachorro extends Animal {
 
     public Cachorro(int id, String nome, int idade, String raca) {
         super(id, nome, idade, raca);
+    }
+
+    @Override
+    public String getVacinaPrimeiraConsulta() {
+        return "Recomendação: V8/V10 + antirrábica, conforme protocolo do veterinário.";
     }
 
     public static void create(Connection conn, Cachorro cachorro, String cpfTutor) throws SQLException {

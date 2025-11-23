@@ -1,18 +1,16 @@
 package Servicos;
 
-import Interface.GetInfo;
-
 import java.sql.*;
 import java.util.*;
 
 
-public class Consulta implements GetInfo {
+public class Consulta implements ExportarTXT {
     private int id;
+    private int animalId;
     private String dataHora;
     private String motivo;
     private String diagnostico;
     private String prescricao;
-    private int animalId;
     private String animalNome;
     private String animalRaca;
     private String vetCpf;
@@ -31,16 +29,6 @@ public class Consulta implements GetInfo {
         this.prescricao = prescricao;
         this.animalId = animalId;
         this.vetCpf = vetCpf;
-    }
-
-    @Override
-    public String gerarReceita(java.util.Scanner sc) {
-        System.out.println("Preenchendo receita da consulta #" + id);
-        System.out.println("Motivo: " + motivo);
-        System.out.print("Digite a prescrição: ");
-        String texto = sc.nextLine();
-        this.prescricao = texto;
-        return texto;
     }
 
     public void setId(int id) {
@@ -119,8 +107,59 @@ public class Consulta implements GetInfo {
         return animalRaca;
     }
 
-    public String getTutorTelefone() {
-        return tutorTelefone;
+    public void setTutorTelefone(String tutorTelefone) {
+        this.tutorTelefone = tutorTelefone;
+    }
+
+    public void preencherReceita(Scanner sc) {
+        System.out.println("\n=== Preenchendo Dados da Consulta ===");
+        System.out.println("Motivo: " + motivo);
+
+        System.out.print("Informe o diagnóstico: ");
+        String diag = sc.nextLine();
+        this.diagnostico = diag;
+
+        System.out.print("Informe a prescrição (receita): ");
+        String presc = sc.nextLine();
+        this.prescricao = presc;
+    }
+
+    @Override
+    public void exportarTXT(String caminhoArquivo) throws Exception {
+        try (java.io.BufferedWriter writer = new java.io.BufferedWriter(
+                new java.io.FileWriter(caminhoArquivo))) {
+
+            writer.write("====== RECEITA VETERINÁRIA ======\n\n");
+
+            writer.write("Consulta Nº: " + id + "\n");
+            writer.write("Data/Hora: " + dataHora + "\n");
+            writer.write("Status: " + (status != null ? status.name() : "NÃO INFORMADO") + "\n\n");
+
+            writer.write("----- Tutor -----\n");
+            writer.write("Nome: " + tutorNome + "\n");
+            writer.write("Telefone: " + tutorTelefone + "\n\n");
+
+            writer.write("----- Animal -----\n");
+            writer.write("Nome: " + animalNome + "\n");
+            writer.write("Raça: " + animalRaca + "\n");
+            writer.write("ID: " + animalId + "\n\n");
+
+            writer.write("----- Veterinário -----\n");
+            writer.write("Nome: " + vetNome + "\n");
+            writer.write("CRMV: " + vetCrmv + "\n");
+            writer.write("CPF: " + vetCpf + "\n\n");
+
+            writer.write("----- Motivo -----\n");
+            writer.write(motivo + "\n\n");
+
+            writer.write("----- Diagnóstico -----\n");
+            writer.write(diagnostico + "\n\n");
+
+            writer.write("----- Prescrição -----\n");
+            writer.write(prescricao + "\n\n");
+
+            writer.write("=================================\n");
+        }
     }
 
     public static void create(Connection conn, Consulta consulta) throws SQLException {
@@ -227,6 +266,51 @@ public class Consulta implements GetInfo {
         return consultas;
     }
 
+    public static Consulta readById(Connection conn, int idConsulta) throws SQLException {
+        String sql = " SELECT c.idConsulta, c.dataHora, c.status, c.motivo, c.diagnostico, c.prescricao," +
+                "a.idAnimal, a.nome  AS animalNome, a.raca  AS animalRaca, " +
+                "pTutor.nome AS tutorNome, pTutor.telefone AS tutorTelefone, " +
+                "pVet.nome AS vetNome, pVet.cpf  AS vetCpf, v.crmv AS vetCrmv " +
+                "FROM Consulta c " +
+                "JOIN Animal a ON a.idAnimal = c.Animal_idAnimal " +
+                "JOIN Tutor t ON t.Pessoa_cpf = a.Tutor_Pessoa_cpf " +
+                "JOIN Pessoa pTutor ON pTutor.cpf = t.Pessoa_cpf " +
+                "JOIN Veterinario v ON v.Pessoa_cpf = c.Veterinario_Pessoa_cpf " +
+                "JOIN Pessoa pVet ON pVet.cpf = v.Pessoa_cpf " +
+                "WHERE c.idConsulta = ?";
+
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setInt(1, idConsulta);
+            ResultSet rs = st.executeQuery();
+
+            if (!rs.next()) {
+                return null;
+            }
+
+            Consulta consulta = new Consulta(
+                    rs.getInt("idConsulta"),
+                    rs.getString("dataHora"),
+                    StatusConsulta.valueOf(rs.getString("status").toUpperCase()),
+                    rs.getString("motivo"),
+                    rs.getString("diagnostico"),
+                    rs.getString("prescricao"),
+                    rs.getInt("idAnimal"),
+                    rs.getString("vetCpf")
+            );
+
+            consulta.setAnimalNome(rs.getString("animalNome"));
+            consulta.setAnimalRaca(rs.getString("animalRaca"));
+
+            consulta.setTutorNome(rs.getString("tutorNome"));
+            consulta.setTutorTelefone(rs.getString("tutorTelefone"));
+
+            consulta.setVetNome(rs.getString("vetNome"));
+            consulta.setVetCrmv(rs.getString("vetCrmv"));
+
+            return consulta;
+        }
+    }
+
     public static List<Consulta> readAll(Connection conn) throws SQLException {
         List<Consulta> consultas = new ArrayList<>();
 
@@ -271,29 +355,28 @@ public class Consulta implements GetInfo {
         return consultas;
     }
 
-    public static void updateReceita(Connection conn, int idConsulta, String receita) throws SQLException {
-        String sql = "UPDATE Consulta SET prescricao = ? WHERE idConsulta = ?";
+    public static void updateDiagnosticoEPrescricao(Connection conn, int idConsulta, String diagnostico, String prescricao) throws SQLException {
+        String sql = "UPDATE Consulta SET diagnostico = ?, prescricao = ? WHERE idConsulta = ?";
+
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, receita);
-            stmt.setInt(2, idConsulta);
+            stmt.setString(1, diagnostico);
+            stmt.setString(2, prescricao);
+            stmt.setInt(3, idConsulta);
             stmt.executeUpdate();
         }
     }
-    public static void atualizarStatus(Connection conn, int idConsulta, StatusConsulta novoStatus) throws SQLException {
-        String sql = "UPDATE Consulta SET status = ? WHERE idConsulta = ?";
 
+    public static boolean isPrimeiraConsulta(Connection conn, int animalId) throws SQLException {
+        String sql = "SELECT COUNT(*) AS total FROM Consulta WHERE Animal_idAnimal = ?";
         try (PreparedStatement st = conn.prepareStatement(sql)) {
-            st.setString(1, novoStatus.name());
-            st.setInt(2, idConsulta);
-
-            int linhas = st.executeUpdate();
-            if (linhas == 0) {
-                System.out.println("Nenhuma consulta encontrada com esse ID.");
+            st.setInt(1, animalId);
+            ResultSet rs = st.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("total") == 1;
             }
         }
+        return false;
     }
-
-
 }
 
 

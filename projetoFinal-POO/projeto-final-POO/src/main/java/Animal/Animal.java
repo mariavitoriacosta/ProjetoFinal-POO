@@ -37,6 +37,8 @@ public abstract class Animal {
         this.id = id;
     }
 
+    public abstract String getVacinaPrimeiraConsulta();
+
     public static void deleteAnimal(Connection conn, int idAnimal) throws SQLException {
         String sql = "DELETE FROM Animal WHERE idAnimal = ?";
 
