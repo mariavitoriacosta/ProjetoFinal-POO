@@ -22,9 +22,5 @@ public abstract class Pessoa {
     public String getTelefone() {
         return telefone;
     }
-
-    public void setCpf(String cpf) {
-        this.cpf = cpf;
-    }
 }
 

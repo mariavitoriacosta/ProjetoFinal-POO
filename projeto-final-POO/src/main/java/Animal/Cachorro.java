@@ -30,7 +30,7 @@ public class Cachorro extends Animal {
 
     @Override
     public String getVacinaPrimeiraConsulta() {
-        return "Recomendação: V8/V10 + antirrábica, conforme protocolo do veterinário.";
+        return "Recomendação: aplicar vacinas V8/V10 + antirrábica, conforme protocolo do veterinário.";
     }
 
     public static void create(Connection conn, Cachorro cachorro, String cpfTutor) throws SQLException {
@@ -108,8 +108,6 @@ public class Cachorro extends Animal {
         }
         return lista;
     }
-
-
 
     public static List<Cachorro> readAll(Connection conn) throws SQLException {
         List<Cachorro> cachorros = new ArrayList<>();

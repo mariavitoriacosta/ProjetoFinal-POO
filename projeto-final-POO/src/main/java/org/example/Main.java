@@ -24,7 +24,7 @@ public class Main {
 
             int opcao;
             do {
-                System.out.println("==== MENU PRINCIPAL ====");
+                System.out.println("==== BEM-VINDO(A) AO PETCORE! ====");
                 System.out.println("1 - Cadastro");
                 System.out.println("2 - Busca");
                 System.out.println("3 - Consultas");
@@ -466,6 +466,9 @@ public class Main {
         System.out.print("ID da consulta: ");
         int idConsulta = Integer.parseInt(sc.nextLine());
 
+        Gato gato = new Gato(0,"gatoAux", 0, "x");
+        Cachorro cachorro = new Cachorro(0, "cachorroAux", 0, "x");
+
         Consulta consulta = Consulta.readById(conn, idConsulta);
 
         if (consulta == null) {
@@ -485,9 +488,9 @@ public class Main {
             }
 
             if (ehGato) {
-                System.out.println("Recomendação: aplicar vacina Múltipla Felina (V3/V4/V5).");
+                System.out.println(gato.getVacinaPrimeiraConsulta());
             } else {
-                System.out.println("Recomendação: aplicar vacina V8/V10.");
+                System.out.println(cachorro.getVacinaPrimeiraConsulta());
             }
         }
 
@@ -510,7 +513,5 @@ public class Main {
             }
         }).start();
     }
-
-
 }
 

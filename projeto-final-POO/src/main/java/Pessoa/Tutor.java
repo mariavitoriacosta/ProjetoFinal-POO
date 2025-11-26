@@ -13,6 +13,10 @@ public class Tutor extends Pessoa {
         return animais;
     }
 
+    public void addAnimal(Animal animal) {
+        this.animais.add(animal);
+    }
+
     public Tutor(String nome, String cpf, String telefone) {
         super(nome, cpf, telefone);
     }
@@ -107,7 +111,7 @@ public class Tutor extends Pessoa {
                                 rs.getString("raca")
                         );
                     }
-                    tutor.getAnimais().add(animal);
+                    tutor.addAnimal(animal);
                 }
             }
         }
@@ -169,7 +173,7 @@ public class Tutor extends Pessoa {
                     }
 
                     if (animal != null) {
-                        tutor.getAnimais().add(animal);
+                        tutor.addAnimal(animal);
                     }
                 }
             }

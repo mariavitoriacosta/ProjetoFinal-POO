@@ -133,7 +133,6 @@ public class Consulta implements ExportarTXT {
 
             writer.write("Consulta Nº: " + id + "\n");
             writer.write("Data/Hora: " + dataHora + "\n");
-            writer.write("Status: " + (status != null ? status.name() : "NÃO INFORMADO") + "\n\n");
 
             writer.write("----- Tutor -----\n");
             writer.write("Nome: " + tutorNome + "\n");

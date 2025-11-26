@@ -32,7 +32,7 @@ public class Gato extends Animal {
 
     @Override
     public String getVacinaPrimeiraConsulta() {
-        return "Recomendação: Múltipla felina (V3/V4/V5) + antirrábica, conforme protocolo do veterinário.";
+        return "Recomendação: aplicar vacinas múltipla felina (V3/V4/V5) + antirrábica, conforme protocolo do veterinário.";
     }
 
     public static void create(Connection conn, Gato gato, String cpfTutor) throws SQLException {
@@ -142,34 +142,6 @@ public class Gato extends Animal {
         }
 
         return gatos;
-    }
-
-    public static void delete(Connection conn, int idAnimal) throws SQLException {
-        boolean oldAuto = conn.getAutoCommit();
-        conn.setAutoCommit(false);
-
-        try {
-            String sqlGato = "DELETE FROM Gato WHERE Animal_idAnimal = ?";
-            try (PreparedStatement st = conn.prepareStatement(sqlGato)) {
-                st.setInt(1, idAnimal);
-                st.executeUpdate();
-            }
-
-            String sqlAnimal = "DELETE FROM Animal WHERE idAnimal = ?";
-            try (PreparedStatement st = conn.prepareStatement(sqlAnimal)) {
-                st.setInt(1, idAnimal);
-                st.executeUpdate();
-            }
-
-            conn.commit();
-            System.out.println("Gato deletado com sucesso!");
-
-        } catch (SQLException e) {
-            conn.rollback();
-            throw e;
-        } finally {
-            conn.setAutoCommit(oldAuto);
-        }
     }
 
 }
