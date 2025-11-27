@@ -24,7 +24,7 @@ public class Main {
 
             int opcao;
             do {
-                System.out.println("==== BEM-VINDO(A) AO PETCORE! ====");
+                System.out.println("==== MENU PRINCIPAL ====");
                 System.out.println("1 - Cadastro");
                 System.out.println("2 - Busca");
                 System.out.println("3 - Consultas");

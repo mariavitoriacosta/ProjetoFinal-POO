@@ -1,0 +1,28 @@
+====== RECEITA VETERINÁRIA ======
+
+Consulta Nº: 1
+Data/Hora: 2025-11-26 10:00:00
+----- Tutor -----
+Nome: Giovana Franciele
+Telefone: 35998628554
+
+----- Animal -----
+Nome: Lua
+Raça: SRD
+ID: 1
+
+----- Veterinário -----
+Nome: João da Silva
+CRMV: MG-12345
+CPF: 123456789
+
+----- Motivo -----
+febre e vômito
+
+----- Diagnóstico -----
+virose
+
+----- Prescrição -----
+dipirona 3x ao dia por 7 dias
+
+=================================
