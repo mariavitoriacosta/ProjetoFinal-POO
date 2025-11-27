@@ -1,5 +1,7 @@
 package org.example;
 
+import Menu.Menu;
+
 import Animal.Animal;
 import Animal.Cachorro;
 import Animal.Gato;
@@ -514,4 +516,3 @@ public class Main {
         }).start();
     }
 }
-
