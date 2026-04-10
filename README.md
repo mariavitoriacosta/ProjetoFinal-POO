@@ -114,7 +114,7 @@ String password = "123456";
 1. Clonar o repositório:
 
 ```bash
-git clone <URL_DO_REPOSITORIO>
+git clone <https://github.com/mariavitoriacosta/ProjetoFinal-POO>
 ```
 
 2. Abrir o projeto em uma IDE (IntelliJ ou Eclipse)
